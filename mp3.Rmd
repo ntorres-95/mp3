@@ -1,5 +1,5 @@
 ---
-title: "mp3"
+title: "MiniProject3"
 output: html_document
 author: Samah Majid and Nathalie Torres
 ---
