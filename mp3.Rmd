@@ -3,3 +3,27 @@ title: "MiniProject3"
 output: html_document
 author: Samah Majid and Nathalie Torres
 ---
+MacLeish has approximately four miles of built trail for use by field station visitors. We would like to be able to classify these trails as “Easy,” “Moderate,” or “Difficult” based on their length and change in elevation. Use the spatial data to develop a heuristic that will classify these (or any other) trails based on their difficulty.
+Supporting data includes:
+Existing trails shapefile
+10’ contour elevation data
+
+
+```{r}
+library(tidyverse)
+library(macleish)
+library(leaflet)
+library(sf)
+```
+```{r, eval = FALSE}
+url <- "http://download.massgis.digital.mass.gov/shapefiles/state/contours250k.zip"
+local_file <- basename(url)
+download.file(url, destfile = local_file)
+unzip(local_file, exdir = "contours250k")
+```
+```{r}
+macleish_layers[["trails"]] %>%
+  st_length()
+```
+
+
