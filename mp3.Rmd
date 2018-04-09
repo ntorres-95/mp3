@@ -1,5 +1,27 @@
 ---
-title: "mp3"
-output: html_document
+title: "Mini Project 3"
 author: Samah Majid and Nathalie Torres
+date: 04/15/18
+output: html_document
 ---
+```{r}
+library(tidyverse)
+library(sf)
+library(leaflet)
+library(macleish)
+```
+```{r, eval = FALSE}
+url <- "http://download.massgis.digital.mass.gov/shapefiles/state/contours250k.zip"
+local_file <- basename(url)
+download.file(url, destfile = local_file)
+unzip(local_file, exdir = "contours250k")
+```
+```{r}
+macleish_layers[["trails"]] %>%
+  st_length()
+```
+```{r}
+trails <- macleish_layers[["trails"]] %>%
+  mutate(computed_length = st_length(geometry))
+```
+
