@@ -2,26 +2,101 @@
 title: "Mini Project 3"
 author: Samah Majid and Nathalie Torres
 date: 04/15/18
-output: html_document
+output:
+  html_document:
+    code_folding: hide
 ---
-```{r}
+```{r, message = FALSE, warning = FALSE}
 library(tidyverse)
 library(sf)
 library(leaflet)
 library(macleish)
 ```
-```{r, eval = FALSE}
-url <- "http://download.massgis.digital.mass.gov/shapefiles/state/contours250k.zip"
-local_file <- basename(url)
-download.file(url, destfile = local_file)
-unzip(local_file, exdir = "contours250k")
-```
-```{r}
+```{r, message = FALSE}
 macleish_layers[["trails"]] %>%
   st_length()
 ```
-```{r}
+```{r, message = FALSE}
 trails <- macleish_layers[["trails"]] %>%
-  mutate(computed_length = st_length(geometry))
+  mutate(computed_length = st_length(geometry)) %>%
+  arrange(desc(computed_length)) 
 ```
-
+```{r, message = FALSE}
+difficulty <- trails %>%
+  filter(as.numeric(computed_length) > 898)
+```
+```{r, message = FALSE}
+moderate <- trails %>%
+  filter(as.numeric(computed_length) > 192 & as.numeric(computed_length) < 832)
+```
+```{r, message = FALSE}
+easy <- trails %>%
+  filter(as.numeric(computed_length) < 188)
+```
+```{r, message = FALSE}
+difficulty %>%
+  st_transform(4326)
+moderate %>%
+  st_transform(4326)
+easy %>%
+  st_transform(4326)
+```
+```{r, message = FALSE}
+macleish_layers[["boundary"]] %>%
+  st_area()
+```
+```{r, message = FALSE}
+proj4_aea <- "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=37.5 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"
+```
+```{r, message = FALSE}
+boundaries_aea <- macleish_layers[["boundary"]] %>%
+  st_transform(proj4_aea) %>%
+  st_transform(4326)
+```
+```{r, message = FALSE}
+leaflet() %>%
+  addTiles() %>%
+  addPolylines(data = difficulty, 
+               weight = 3, color = "red") %>%
+  addPolylines(data = moderate, 
+               weight = 3, color = "yellow") %>%
+  addPolylines(data = easy, 
+               weight = 3, color = "blue") %>%
+  addPolylines(data = boundaries_aea, weight = 2, color = "black")
+```
+```{r, message = FALSE}
+elevation <- macleish_layers[["contours_3m"]] %>%
+  arrange(desc(ELEV_M)) %>%
+  st_transform(4326)
+```
+```{r, message = FALSE}
+high <- elevation %>%
+  filter(as.numeric(ELEV_M) > 251)
+```
+```{r, message = FALSE}
+moderately_high <- elevation  %>%
+  filter(as.numeric(ELEV_M) > 227 & as.numeric(ELEV_M) < 250)
+```
+```{r, message = FALSE}
+low <- elevation %>%
+  filter(as.numeric(ELEV_M) < 226)
+```
+```{r, message = FALSE}
+high %>%
+  st_transform(4326)
+moderately_high %>%
+  st_transform(4326)
+low %>%
+  st_transform(4326)
+```
+```{r, message = FALSE}
+leaflet() %>%
+  addTiles() %>%
+  addPolylines(data = difficulty,weight = 3, color = "red") %>%
+  addPolylines(data = moderate, weight = 3, color = "yellow") %>%
+  addPolylines(data = easy, weight = 3, color = "blue") %>%
+  addPolylines(data = high, weight = 2.5, color = "black") %>%
+  addPolylines(data = moderately_high, weight = 1.5, color = "black") %>%
+  addPolylines(data = low, weight = 0.5, color = "black") %>%
+  addPolylines(data = boundaries_aea, weight = 2, color = "black")
+```
