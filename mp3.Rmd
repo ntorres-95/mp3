@@ -1,17 +1,23 @@
 ---
-title: "Mini Project 3"
+title: "Mini Project 3: Classification of MacLeish trails based on difficulty"
 author: Samah Majid and Nathalie Torres
 date: 04/15/18
 output:
   html_document:
     code_folding: hide
 ---
+
+The Ada & Archibald MacLeish Field Station is a 240-acre property of forest and farmland located in West Whately, MA. It provides Smith College students an opportunity to pursue environmental research, outdoor education and low impact recreation. MacLeish has approximately four miles of built trail for use by field station visitors. In this mini project, we attempt to define which trails are most difficult, moderate or easy to complete, based on their length and elevation levels. We use spatial data provided by the field station to create two leaflet maps. We focus on the following macleish layers: *trails* and *contours_3m* to support our topic. The *trails* layer includes 15 trail segments and the *contours_3m* layer provides data on elevation levels in meters (m). 
+
 ```{r, message = FALSE, warning = FALSE}
 library(tidyverse)
 library(sf)
 library(leaflet)
 library(macleish)
 ```
+
+We first compute the total lengths of the 15 trails that are included in the data frame. It is important to note that some trails appear twice within the data frame, but they all have different computed lengths. From our graphs, we were able to determine that this was because while they can be considered to be one long trail, they can also be completed separately and therefore, are individual trails on their own. As such, we decided to leave them as they were and consider them as separate trails. When choosing to color code the trails, we did so according to the computed lengths and not the trail names, in order to avoid confusion. 
+
 ```{r, message = FALSE}
 macleish_layers[["trails"]] %>%
   st_length()
@@ -22,7 +28,7 @@ trails <- macleish_layers[["trails"]] %>%
   arrange(desc(computed_length)) 
 ```
 ```{r, message = FALSE}
-difficulty <- trails %>%
+difficult <- trails %>%
   filter(as.numeric(computed_length) > 898)
 ```
 ```{r, message = FALSE}
@@ -34,7 +40,7 @@ easy <- trails %>%
   filter(as.numeric(computed_length) < 188)
 ```
 ```{r, message = FALSE}
-difficulty %>%
+difficult %>%
   st_transform(4326)
 moderate %>%
   st_transform(4326)
@@ -56,18 +62,17 @@ boundaries_aea <- macleish_layers[["boundary"]] %>%
 ```{r, message = FALSE}
 leaflet() %>%
   addTiles() %>%
-  addPolylines(data = difficulty, 
-               weight = 3, color = "red") %>%
-  addPolylines(data = moderate, 
-               weight = 3, color = "yellow") %>%
-  addPolylines(data = easy, 
-               weight = 3, color = "blue") %>%
-  addPolylines(data = boundaries_aea, weight = 2, color = "black")
+  addPolylines(data = difficult, weight = 3, color = "red") %>%
+  addPolylines(data = moderate, weight = 3, color = "yellow") %>%
+  addPolylines(data = easy, weight = 3, color = "blue") %>%
+  addPolylines(data = boundaries_aea, weight = 2, color = "black") 
 ```
+
+The graph above outlines the MacLeish property in black, and includes all the 15 trails within the property. The trails are color coded into three categories according to their lengths - Easy, Moderate and Difficult. The top five longest trails are categorized under difficult and include Snowmobile Trail, Snowmobile Trail, Eastern Loop, Western Loop and Poplar Hill Road, color coded as red. The middle five trails are categorized as moderate, indicated by the color yellow and include Eastern Loop, Porcupine Trail, Vernal Pool Loop, entry trail and Western Loop. Lastly, the shortest trails are classified as easy and are indicated by the color blue. These trails include Western Loop, Driveway, Poplar Hill Road, Easy Out and Easy Out. 
+
 ```{r, message = FALSE}
 elevation <- macleish_layers[["contours_3m"]] %>%
-  arrange(desc(ELEV_M)) %>%
-  st_transform(4326)
+  arrange(desc(ELEV_M))
 ```
 ```{r, message = FALSE}
 high <- elevation %>%
@@ -92,11 +97,17 @@ low %>%
 ```{r, message = FALSE}
 leaflet() %>%
   addTiles() %>%
-  addPolylines(data = difficulty,weight = 3, color = "red") %>%
+  addPolylines(data = difficult, weight = 3, color = "red") %>%
   addPolylines(data = moderate, weight = 3, color = "yellow") %>%
   addPolylines(data = easy, weight = 3, color = "blue") %>%
   addPolylines(data = high, weight = 2.5, color = "black") %>%
-  addPolylines(data = moderately_high, weight = 1.5, color = "black") %>%
-  addPolylines(data = low, weight = 0.5, color = "black") %>%
+  addPolylines(data = moderately_high, weight = 2.5, color = "gray") %>%
+  addPolylines(data = low, weight = 2.5, color = "white") %>%
   addPolylines(data = boundaries_aea, weight = 2, color = "black")
 ```
+
+The graph above shows the same details as the previous graph, with the inclusion of elevation levels. The black lines indicate highest elevation, gray lines as moderately high elevation and the white lines as low levels of elevation. This map allows us to visualize the elevation levels within the trails, giving us an indication of which route might be more challenging. It allows one to choose a trail taking both the length and the elevation into consideration. A longer trail with high levels of elevation will be more challenging than one with low levels of elevation, and depending on one’s fitness level, one can choose which trail to pick and which to avoid. We can see that most of high elevated land is located in the center of the MacLeish property. This tells us that the trail segments - most of them being red and yellow - located in the center are difficult to complete in terms of elevation levels.
+
+These findings will help those at the MacLeish Field Station categorize existing trails based on ease and accessibility. As this recommendation involves only providing further information to visitors and hikers, it does not include any additional costs to implement and can be implemented easily in the short run. This information can be easily made available online or displayed on a big board, and thus should involve no concerns for environmental impact. We believe that this information will remove any roadblock for visitors and hikers and predict that visitors will be in favor of these changes. More data on the lengths and elevation levels can be retrieved from our RMD file. [^1]
+
+[^1]: https://github.com/ntorres-95/mp3
